@@ -242,7 +242,9 @@ def detect_languages():
     found = []
     try:
         cpp_sources = git_tracked_files(CPP_HEADER_AND_SOURCE_EXTENSIONS)
-        py_sources = git_tracked_files((".py",))
+        # Every consumer has a root dev.py (the DevTools bootstrap) regardless
+        # of language, so it alone must not count as evidence of a Python repo.
+        py_sources = [f for f in git_tracked_files((".py",)) if f != "dev.py"]
     except ToolError as exc:
         print("  (not a git working tree, or git unavailable: {})".format(exc))
         cpp_sources = py_sources = []
