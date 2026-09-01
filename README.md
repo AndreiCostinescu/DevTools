@@ -9,8 +9,7 @@ CI checks are defined once instead of copy-pasted per repo.
   hook repo: license-header check (C/C++ and Python variants), clang-format,
   clang-tidy, DCO sign-off. Ruff itself isn't wrapped here — a Python
   consumer adds `astral-sh/ruff-pre-commit` as its own separate `repo:` entry.
-- `config/` — canonical `.clang-format` / `.clang-tidy` (and, once a Python
-  repo is wired up, `ruff.toml`).
+- `config/` — canonical `.clang-format` / `.clang-tidy` / `ruff.toml`.
 - `scripts/devtools.py` — the actual `setup`/`format`/`lint`/`sync-devtools`/
   `help` implementation, parameterized by a mandatory `--langs` list (`cpp`,
   `python`, or both). Stdlib-only Python (3.5+, no pip installs needed to
@@ -21,8 +20,9 @@ CI checks are defined once instead of copy-pasted per repo.
   (The pre-commit hooks in `hooks/` stay `sh` — those only ever run through
   Git's own hook mechanism, which always has a POSIX shell available even
   on Windows, so there's no reason to change them.)
-- `.github/actions/` — `check-clang-format` and `run-clang-tidy` composite
-  actions for CI, wrapping the one command each that's identical everywhere.
+- `.github/actions/` — `check-clang-format`, `run-clang-tidy`, and
+  `check-ruff` composite actions for CI, wrapping the one command each
+  that's identical everywhere.
 
 ## Using it in a repo
 
@@ -48,5 +48,8 @@ consuming repo to pick it up — nothing here is pulled automatically.
 
 ## Planned
 
-Wire up an actual Python consumer (ConceptHierarchy): extract `ruff.toml`
-into `config/`, and add a `check-ruff` composite action for CI.
+Migrate ConceptHierarchy itself onto this repo: add it as the `.devtools`
+submodule, replace its hand-rolled `.githooks/` + `.pre-commit-config.yaml`
++ `Makefile` with the shared ones (adding `astral-sh/ruff-pre-commit` as
+its own `repo:` entry per above), and swap its `ci.yml`/`lint.yml` steps
+for the `check-ruff` composite action.
