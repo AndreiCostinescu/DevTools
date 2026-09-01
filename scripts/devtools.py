@@ -10,10 +10,11 @@ Invoked from a consuming repo's own tiny `dev.py` bootstrap (identical in
 every consumer - see README) as:
     python dev.py <command> [<lang> ...]
 
-dev.py's only job is to run `git submodule update --init --recursive` (so
-this script actually exists on a fresh clone, before submodules are
-initialized) and then exec straight into this script with the same argv -
-no extra tool to install beyond the Python you already need to run it.
+dev.py's only job is to download a pinned snapshot of DevTools into
+.devtools/ (so this script actually exists on a fresh clone - no git
+submodule involved) and then exec straight into this script with the same
+argv - no extra tool to install beyond the Python you already need to run
+it.
 """
 
 import argparse
@@ -367,8 +368,6 @@ def cmd_setup(args):
         print("Note: clearing an existing core.hooksPath so pre-commit's hooks take effect.")
         run_quiet(["git", "config", "--unset-all", "core.hooksPath"])
 
-    run(["git", "submodule", "update", "--init", "--recursive"])
-
     # sys.executable, not bare 'pip': guarantees installation into the
     # interpreter running this script rather than whichever pip is first on PATH.
     pip = [sys.executable, "-m", "pip", "install"]
@@ -387,7 +386,7 @@ def cmd_setup(args):
 
 def cmd_sync_devtools(args):
     require_langs(args.langs)
-    ensure_gitignore(".gitignore", [STATE_FILE + ".tmp"])
+    ensure_gitignore(".gitignore", [".devtools/", STATE_FILE + ".tmp"])
     sync_config(".devtools", STATE_FILE, sync_devtools_files(args.langs))
 
 
