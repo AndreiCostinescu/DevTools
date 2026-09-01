@@ -10,6 +10,9 @@
 #
 # Called by pre-commit — do not invoke directly.
 
+REPO_NAME=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null)
+REPO_NAME="${REPO_NAME:-Unknown} Authors"
+
 MISSING=0
 MISSING_FILES=""
 
@@ -43,7 +46,7 @@ if [ "$MISSING" -ne 0 ]; then
     echo "Add the following block at the very top of each file:"
     echo ""
     echo "    /*"
-    echo "     * Copyright $(date +%Y) AndreiUtils Authors"
+    echo "     * Copyright $(date +%Y) $REPO_NAME"
     echo "     *"
     echo "     * Licensed under the Apache License, Version 2.0 (the \"License\");"
     echo "     * you may not use this file except in compliance with the License."
