@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+# Copyright 2026 DevTools Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 scripts/devtools.py
 
@@ -28,7 +42,16 @@ import sys
 from difflib import unified_diff
 
 KNOWN_LANGS = ("cpp", "python")
-CPP_HEADER_AND_SOURCE_EXTENSIONS = (".h", ".hpp", ".hh", ".hxx", ".c", ".cc", ".cpp", ".cxx")
+CPP_HEADER_AND_SOURCE_EXTENSIONS = (
+    ".h",
+    ".hpp",
+    ".hh",
+    ".hxx",
+    ".c",
+    ".cc",
+    ".cpp",
+    ".cxx",
+)
 CPP_SOURCE_EXTENSIONS = (".c", ".cc", ".cpp", ".cxx")
 STATE_FILE = ".devtools-sync.sha256"
 
@@ -40,37 +63,37 @@ MAX_COMMAND_LINE = 7000
 LICENSE_MARKER = "Licensed under the Apache License, Version 2.0"
 
 PYTHON_HEADER_LINES = (
-    '# Copyright {year} {repo_name}',
-    '#',
+    "# Copyright {year} {repo_name}",
+    "#",
     '# Licensed under the Apache License, Version 2.0 (the "License");',
-    '# you may not use this file except in compliance with the License.',
-    '# You may obtain a copy of the License at',
-    '#',
-    '#     http://www.apache.org/licenses/LICENSE-2.0',
-    '#',
-    '# Unless required by applicable law or agreed to in writing, software',
+    "# you may not use this file except in compliance with the License.",
+    "# You may obtain a copy of the License at",
+    "#",
+    "#     http://www.apache.org/licenses/LICENSE-2.0",
+    "#",
+    "# Unless required by applicable law or agreed to in writing, software",
     '# distributed under the License is distributed on an "AS IS" BASIS,',
-    '# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.',
-    '# See the License for the specific language governing permissions and',
-    '# limitations under the License.',
+    "# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.",
+    "# See the License for the specific language governing permissions and",
+    "# limitations under the License.",
 )
 
 CPP_HEADER_LINES = (
-    '/*',
-    ' * Copyright {year} {repo_name}',
-    ' *',
+    "/*",
+    " * Copyright {year} {repo_name}",
+    " *",
     ' * Licensed under the Apache License, Version 2.0 (the "License");',
-    ' * you may not use this file except in compliance with the License.',
-    ' * You may obtain a copy of the License at',
-    ' *',
-    ' *     http://www.apache.org/licenses/LICENSE-2.0',
-    ' *',
-    ' * Unless required by applicable law or agreed to in writing, software',
+    " * you may not use this file except in compliance with the License.",
+    " * You may obtain a copy of the License at",
+    " *",
+    " *     http://www.apache.org/licenses/LICENSE-2.0",
+    " *",
+    " * Unless required by applicable law or agreed to in writing, software",
     ' * distributed under the License is distributed on an "AS IS" BASIS,',
-    ' * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.',
-    ' * See the License for the specific language governing permissions and',
-    ' * limitations under the License.',
-    ' */',
+    " * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.",
+    " * See the License for the specific language governing permissions and",
+    " * limitations under the License.",
+    " */",
 )
 
 
@@ -148,7 +171,9 @@ def git_output(args):
     try:
         return subprocess.check_output([resolve("git")] + list(args))
     except subprocess.CalledProcessError as exc:
-        raise ToolError("git {} failed with exit status {}".format(" ".join(args), exc.returncode))
+        raise ToolError(
+            "git {} failed with exit status {}".format(" ".join(args), exc.returncode)
+        )
     except OSError as exc:
         raise ToolError("could not execute git: {}".format(exc))
 
@@ -160,7 +185,9 @@ def git_tracked_files(extensions):
     names, and a name containing a newline would otherwise be split in two.
     """
     raw = git_output(["ls-files", "-z"])
-    names = [chunk.decode("utf-8", "surrogateescape") for chunk in raw.split(b"\0") if chunk]
+    names = [
+        chunk.decode("utf-8", "surrogateescape") for chunk in raw.split(b"\0") if chunk
+    ]
     return [n for n in names if n.lower().endswith(extensions)]
 
 
@@ -175,7 +202,11 @@ def positional(files):
 
 def repo_name():
     try:
-        top = git_output(["rev-parse", "--show-toplevel"]).decode("utf-8", "surrogateescape").strip()
+        top = (
+            git_output(["rev-parse", "--show-toplevel"])
+            .decode("utf-8", "surrogateescape")
+            .strip()
+        )
         name = os.path.basename(top)
     except ToolError:
         name = "Unknown"
@@ -238,7 +269,9 @@ def require_langs(langs):
         sys.exit(1)
     for lang in langs:
         if lang not in KNOWN_LANGS:
-            fail("unknown language '{}' (known: {})".format(lang, " ".join(KNOWN_LANGS)))
+            fail(
+                "unknown language '{}' (known: {})".format(lang, " ".join(KNOWN_LANGS))
+            )
 
 
 def ensure_gitignore(gitignore_file, patterns):
@@ -255,9 +288,9 @@ def ensure_gitignore(gitignore_file, patterns):
         return
     with io.open(gitignore_file, "a", encoding="utf-8", newline="\n") as f:
         if needs_leading_newline:
-            f.write(u"\n")
+            f.write("\n")
         for p in to_add:
-            f.write(p + u"\n")
+            f.write(p + "\n")
             print("Added '{}' to {}".format(p, gitignore_file))
 
 
@@ -285,7 +318,7 @@ def write_state(state_file, state):
     tmp = state_file + ".tmp"
     with io.open(tmp, "w", encoding="utf-8", newline="\n") as f:
         for name in sorted(state):
-            f.write(u"{} {}\n".format(name, state[name]))
+            f.write("{} {}\n".format(name, state[name]))
     os.replace(tmp, state_file)
 
 
@@ -293,12 +326,20 @@ def report_conflict(name, src, reason):
     print("")
     print("WARNING: '{}' {} — leaving it alone.".format(name, reason))
     print("  Local vs. DevTools' current version:")
-    with io.open(name, "r", encoding="utf-8", errors="replace") as f_local, \
-            io.open(src, "r", encoding="utf-8", errors="replace") as f_upstream:
+    with (
+        io.open(name, "r", encoding="utf-8", errors="replace") as f_local,
+        io.open(src, "r", encoding="utf-8", errors="replace") as f_upstream,
+    ):
         sys.stdout.writelines(
-            unified_diff(f_local.readlines(), f_upstream.readlines(), fromfile=name, tofile=src)
+            unified_diff(
+                f_local.readlines(), f_upstream.readlines(), fromfile=name, tofile=src
+            )
         )
-    print("  Resolve manually (or delete '{}' and re-run to accept upstream), then re-sync.".format(name))
+    print(
+        "  Resolve manually (or delete '{}' and re-run to accept upstream), then re-sync.".format(
+            name
+        )
+    )
     print("")
 
 
@@ -317,10 +358,14 @@ def sync_config(devtools_dir, state_file, files):
                 # Pre-existing file this script has never written. Treat as a
                 # conflict rather than silently clobbering hand-written config.
                 if sha256_of(name) != new_hash:
-                    report_conflict(name, src, "already exists and was not written by DevTools")
+                    report_conflict(
+                        name, src, "already exists and was not written by DevTools"
+                    )
                     continue
             elif sha256_of(name) != old_hash:
-                report_conflict(name, src, "has local changes since the last DevTools sync")
+                report_conflict(
+                    name, src, "has local changes since the last DevTools sync"
+                )
                 continue
 
         with open(src, "rb") as f_src:
@@ -342,9 +387,15 @@ def sync_devtools_files(langs):
 
 
 def cmd_help(_args):
-    print("Usage: python dev.py <command> <lang> [<lang> ...]   (known languages: {})".format(" ".join(KNOWN_LANGS)))
+    print(
+        "Usage: python dev.py <command> <lang> [<lang> ...]   (known languages: {})".format(
+            " ".join(KNOWN_LANGS)
+        )
+    )
     print("")
-    print("Commands: help, detect-languages, setup, format, lint, sync-devtools, license-headers")
+    print(
+        "Commands: help, detect-languages, setup, format, lint, sync-devtools, license-headers"
+    )
     print("")
     print("Detected in this repo:")
     detect_languages()
@@ -360,12 +411,18 @@ def cmd_setup(args):
     # `git config --get-all` exits 1 when the key isn't set at all - the
     # normal case for most repos - so check the exit code directly instead
     # of routing this through git_output (which would raise ToolError).
-    hooks_path_set = subprocess.call(
-        [resolve("git"), "config", "--get-all", "core.hooksPath"],
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-    ) == 0
+    hooks_path_set = (
+        subprocess.call(
+            [resolve("git"), "config", "--get-all", "core.hooksPath"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        == 0
+    )
     if hooks_path_set:
-        print("Note: clearing an existing core.hooksPath so pre-commit's hooks take effect.")
+        print(
+            "Note: clearing an existing core.hooksPath so pre-commit's hooks take effect."
+        )
         run_quiet(["git", "config", "--unset-all", "core.hooksPath"])
 
     # sys.executable, not bare 'pip': guarantees installation into the
@@ -380,7 +437,16 @@ def cmd_setup(args):
     if result != 0:
         sys.exit(result)
 
-    run(["pre-commit", "install", "--hook-type", "pre-commit", "--hook-type", "commit-msg"])
+    run(
+        [
+            "pre-commit",
+            "install",
+            "--hook-type",
+            "pre-commit",
+            "--hook-type",
+            "commit-msg",
+        ]
+    )
     cmd_sync_devtools(args)
 
 
@@ -452,13 +518,13 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command")
 
     for name, func in (
-            ("help", cmd_help),
-            ("detect-languages", cmd_detect_languages),
-            ("setup", cmd_setup),
-            ("format", cmd_format),
-            ("lint", cmd_lint),
-            ("sync-devtools", cmd_sync_devtools),
-            ("license-headers", cmd_license_headers),
+        ("help", cmd_help),
+        ("detect-languages", cmd_detect_languages),
+        ("setup", cmd_setup),
+        ("format", cmd_format),
+        ("lint", cmd_lint),
+        ("sync-devtools", cmd_sync_devtools),
+        ("license-headers", cmd_license_headers),
     ):
         p = sub.add_parser(name)
         p.add_argument("langs", nargs="*")
