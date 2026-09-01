@@ -23,13 +23,13 @@ BUILD_DIR ?= build
 .PHONY: setup format lint sync-devtools help _check-langs
 
 help:
-	echo "Usage: make setup LANGS=\"<lang> [<lang> ...]\"   (known: $(KNOWN_LANGS))"
+	@echo "Usage: make setup LANGS=\"<lang> [<lang> ...]\"   (known: $(KNOWN_LANGS))"
 	echo ""
 	echo "Detected in this repo:"
 	.devtools/scripts/detect-languages
 
 _check-langs:
-	if [ -z "$(strip $(LANGS))" ]; then
+	@if [ -z "$(strip $(LANGS))" ]; then
 	    echo "" >&2
 	    echo "ERROR: LANGS is required, e.g.:" >&2
 	    echo "    make setup LANGS=\"cpp python\"" >&2
@@ -49,7 +49,7 @@ _check-langs:
 	done
 
 setup: _check-langs
-	-git config --unset-all core.hooksPath
+	@git config --unset-all core.hooksPath || true
 	git submodule update --init --recursive
 	if echo " $(LANGS) " | grep -q ' python '; then
 	    pip install -e ".[dev]"
@@ -60,11 +60,11 @@ setup: _check-langs
 	$(MAKE) --no-print-directory -f .devtools/setup.mk sync-devtools LANGS="$(LANGS)"
 
 sync-devtools: _check-langs
-	.devtools/scripts/ensure-gitignore .gitignore $(STATE_FILE).tmp
+	@.devtools/scripts/ensure-gitignore .gitignore $(STATE_FILE).tmp
 	.devtools/scripts/sync-config .devtools $(STATE_FILE) $(if $(filter cpp,$(LANGS)),.clang-format .clang-tidy) $(if $(filter python,$(LANGS)),ruff.toml)
 
 format: _check-langs
-	if echo " $(LANGS) " | grep -q ' cpp '; then
+	@if echo " $(LANGS) " | grep -q ' cpp '; then
 	    clang-format -i $$(git ls-files '*.h' '*.hpp' '*.hh' '*.hxx' '*.c' '*.cc' '*.cpp' '*.cxx')
 	fi
 	if echo " $(LANGS) " | grep -q ' python '; then
@@ -73,7 +73,7 @@ format: _check-langs
 	fi
 
 lint: _check-langs
-	if echo " $(LANGS) " | grep -q ' cpp '; then
+	@if echo " $(LANGS) " | grep -q ' cpp '; then
 	    clang-tidy -p $(BUILD_DIR) $$(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx')
 	fi
 	if echo " $(LANGS) " | grep -q ' python '; then
