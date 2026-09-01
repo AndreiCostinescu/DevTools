@@ -1,0 +1,53 @@
+#!/usr/bin/env sh
+# scripts/sync-config
+#
+# Copies canonical config files out of a DevTools checkout into the current
+# repository, refusing to overwrite a destination file that has been
+# modified locally since the last sync. "Since the last sync" is tracked via
+# a checksum recorded in <state-file> at copy time: if the destination's
+# current checksum no longer matches what was recorded, someone edited it
+# locally (or committed a deliberate divergence) and it's left alone.
+#
+# Usage: .devtools/scripts/sync-config <devtools-dir> <state-file> <file>...
+#   Each <file> is a path relative to <devtools-dir>/config/, copied to the
+#   same relative path under the current directory. <state-file> should be
+#   committed to the consuming repo so the "last synced" checksum survives
+#   across clones and commits.
+
+set -eu
+
+DEVTOOLS_DIR="$1"
+STATE_FILE="$2"
+shift 2
+
+touch "$STATE_FILE"
+
+for f in "$@"; do
+    src="$DEVTOOLS_DIR/config/$f"
+    if [ ! -f "$src" ]; then
+        echo "ERROR: $src not found in DevTools checkout." >&2
+        exit 1
+    fi
+
+    new_hash=$(sha256sum "$src" | cut -d' ' -f1)
+    old_hash=$(grep "^$f " "$STATE_FILE" 2>/dev/null | cut -d' ' -f2 || true)
+
+    if [ -f "$f" ] && [ -n "$old_hash" ]; then
+        cur_hash=$(sha256sum "$f" | cut -d' ' -f1)
+        if [ "$cur_hash" != "$old_hash" ]; then
+            echo ""
+            echo "WARNING: '$f' has local changes since the last DevTools sync — leaving it alone."
+            echo "  Local vs. DevTools' current version:"
+            diff -u "$f" "$src" || true
+            echo "  Resolve manually (or delete '$f' and re-run to accept upstream), then re-sync."
+            echo ""
+            continue
+        fi
+    fi
+
+    cp "$src" "$f"
+    grep -v "^$f " "$STATE_FILE" > "$STATE_FILE.tmp" 2>/dev/null || true
+    echo "$f $new_hash" >> "$STATE_FILE.tmp"
+    mv "$STATE_FILE.tmp" "$STATE_FILE"
+    echo "Synced '$f' from DevTools."
+done
