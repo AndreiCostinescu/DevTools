@@ -1,0 +1,30 @@
+- id: license-header-check
+  name: Apache 2.0 license header check
+  description: Rejects staged C/C++ files that are missing the Apache 2.0 license header.
+  entry: hooks/check-license-header
+  language: script
+  files: '\.(h|hpp|hh|hxx|c|cc|cpp|cxx)$'
+  pass_filenames: false
+
+- id: clang-format
+  name: clang-format
+  description: Formats staged C/C++ files in place with clang-format.
+  entry: hooks/run-clang-format
+  language: script
+  files: '\.(h|hpp|hh|hxx|c|cc|cpp|cxx)$'
+  pass_filenames: false
+
+- id: clang-tidy
+  name: clang-tidy
+  description: Runs clang-tidy against staged C/C++ source files.
+  entry: hooks/run-clang-tidy
+  language: script
+  files: '\.(c|cc|cpp|cxx)$'
+  pass_filenames: false
+
+- id: dco-check
+  name: DCO sign-off check
+  description: Rejects commits that lack a "Signed-off-by:" trailer.
+  entry: hooks/commit-msg
+  language: script
+  always_run: true
