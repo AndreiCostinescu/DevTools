@@ -35,4 +35,4 @@
   description: Rejects commits that lack a "Signed-off-by:" trailer.
   entry: hooks/commit-msg
   language: script
-  always_run: true
+  stages: [commit-msg]
