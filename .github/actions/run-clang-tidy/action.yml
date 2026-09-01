@@ -1,0 +1,16 @@
+name: Run clang-tidy
+description: Runs clang-tidy against every tracked C/C++ source file using the compile_commands.json in build-dir.
+
+inputs:
+  build-dir:
+    description: Directory containing compile_commands.json.
+    required: false
+    default: build
+
+runs:
+  using: composite
+  steps:
+    - name: Run clang-tidy
+      shell: bash
+      run: |
+        clang-tidy -p "${{ inputs.build-dir }}" $(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx')

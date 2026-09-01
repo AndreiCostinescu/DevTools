@@ -1,0 +1,11 @@
+name: Check clang-format
+description: Fails if any tracked C/C++ file is not formatted per the repo's .clang-format.
+
+runs:
+  using: composite
+  steps:
+    - name: Check formatting (clang-format)
+      shell: bash
+      run: |
+        clang-format --dry-run --Werror \
+          $(git ls-files '*.h' '*.hpp' '*.hh' '*.hxx' '*.c' '*.cc' '*.cpp' '*.cxx')
