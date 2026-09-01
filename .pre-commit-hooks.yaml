@@ -1,9 +1,17 @@
-- id: license-header-check
-  name: Apache 2.0 license header check
+- id: license-header-check-cpp
+  name: Apache 2.0 license header check (C/C++)
   description: Rejects staged C/C++ files that are missing the Apache 2.0 license header.
-  entry: hooks/check-license-header
+  entry: hooks/check-license-header cpp
   language: script
   files: '\.(h|hpp|hh|hxx|c|cc|cpp|cxx)$'
+  pass_filenames: false
+
+- id: license-header-check-python
+  name: Apache 2.0 license header check (Python)
+  description: Rejects staged Python files that are missing the Apache 2.0 license header.
+  entry: hooks/check-license-header python
+  language: script
+  types: [python]
   pass_filenames: false
 
 - id: clang-format

@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+# scripts/detect-languages
+#
+# Best-effort, advisory detection of which languages a repo's DevTools setup
+# likely needs, based on marker files/tracked sources. Never acted on
+# automatically - `make setup` still requires LANGS to be passed explicitly;
+# this only feeds the suggestion printed in its help/error output.
+#
+# Usage: .devtools/scripts/detect-languages   (run from the repo root)
+
+set -eu
+
+FOUND=0
+
+if [ -f CMakeLists.txt ] || git ls-files -- '*.cpp' '*.cc' '*.cxx' '*.hpp' '*.hh' '*.hxx' 2>/dev/null | grep -q .; then
+    echo "  cpp    (found CMakeLists.txt and/or tracked C/C++ sources)"
+    FOUND=1
+fi
+
+if [ -f pyproject.toml ] || [ -f setup.py ] || git ls-files -- '*.py' 2>/dev/null | grep -q .; then
+    echo "  python (found pyproject.toml/setup.py and/or tracked .py files)"
+    FOUND=1
+fi
+
+if [ "$FOUND" -eq 0 ]; then
+    echo "  (nothing detected)"
+fi
