@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+# scripts/ensure-gitignore
+#
+# Ensures each given pattern is present in a .gitignore file, appending it
+# (creating the file if needed) when missing. Idempotent - safe to run on
+# every `make setup` / `sync-devtools`.
+#
+# Usage: .devtools/scripts/ensure-gitignore <gitignore-file> <pattern>...
+
+set -eu
+
+GITIGNORE_FILE="$1"
+shift
+
+touch "$GITIGNORE_FILE"
+
+for pattern in "$@"; do
+    if ! grep -qxF "$pattern" "$GITIGNORE_FILE"; then
+        printf '%s\n' "$pattern" >> "$GITIGNORE_FILE"
+        echo "Added '$pattern' to $GITIGNORE_FILE"
+    fi
+done
