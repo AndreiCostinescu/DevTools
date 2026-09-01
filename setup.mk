@@ -20,7 +20,7 @@ KNOWN_LANGS := cpp python
 STATE_FILE := .devtools-sync.sha256
 BUILD_DIR ?= build
 
-.PHONY: setup format lint sync-devtools help _check-langs
+.PHONY: setup format lint sync-devtools help _check-langs _unset-hookspath
 
 help:
 	@echo "Usage: make setup LANGS=\"<lang> [<lang> ...]\"   (known: $(KNOWN_LANGS))"
@@ -48,8 +48,10 @@ _check-langs:
 	    esac
 	done
 
-setup: _check-langs
-	@git config --unset-all core.hooksPath || true
+_unset-hookspath:
+	-git config --unset-all core.hooksPath
+
+setup: _check-langs _unset-hookspath
 	git submodule update --init --recursive
 	if echo " $(LANGS) " | grep -q ' python '; then
 	    pip install -e ".[dev]"
