@@ -11,3 +11,5 @@ Thumbs.db
 # Python
 __pycache__/
 *.py[cod]
+.devtools/
+.devtools-sync.sha256.tmp
